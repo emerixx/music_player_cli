@@ -154,8 +154,11 @@ fn main() {
                     + "\r\n";
             }
             //fourth line
-            string_to_print =
-                string_to_print + "Volume: " + sink.volume().to_string().as_str() + "\r\n";
+            string_to_print = string_to_print + "Volume: " + sink.volume().to_string().as_str();
+            if sink.is_paused() {
+                string_to_print = string_to_print + "  (Paused)";
+            }
+            string_to_print = string_to_print + "\r\n";
             for _n in 0..N_OF_LINES {
                 execute!(std::io::stdout(), MoveUp(1), Clear(ClearType::CurrentLine));
             }
