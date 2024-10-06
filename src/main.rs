@@ -26,7 +26,7 @@ use crossterm::{
     execute,
 };
 
-static DIR: &str = "./";
+static DIR: &str = "./music/";
 static CHANGE_VOL_BY: f32 = 0.1;
 static VOL_MAX: f32 = 2.5;
 static VOL_MIN: f32 = 0.0;
@@ -41,6 +41,10 @@ fn main() {
     let mut current_song: usize = 0;
     let mut current_song_len_str: String = "".to_owned();
     let mut string_to_print: String = "".to_owned();
+    let mut updated_since_paused = false;
+    let mut indicator: usize = 0;
+    let indicator_chars_set_1 = vec!["|", "/", "-", "\\"];
+    let indicator_chars_set_2 = vec!["I", "II", "III", "IIII"];
     let song_names: Vec<String> = list_music_files();
     if song_names.len() <= 1 {
         println!(
@@ -67,7 +71,7 @@ fn main() {
     );
     loop {
         // `poll()` waits for an `Event` for a given time period
-        if poll(Duration::from_millis(100)).unwrap() {
+        if poll(Duration::from_millis(250)).unwrap() {
             // It's guaranteed that the `read()` won't block when the `poll()`
             // function returns `true`
             match read().unwrap() {
@@ -78,7 +82,7 @@ fn main() {
                 Event::Key(KeyEvent {
                     code: KeyCode::Char(' '),
                     ..
-                }) => toggle_pause(&sink),
+                }) => updated_since_paused = toggle_pause(&sink),
                 Event::Key(KeyEvent {
                     code: KeyCode::Right,
                     ..
@@ -124,62 +128,74 @@ fn main() {
                     add_file_to_empty_sink(&sink, &(song_names[current_song]))
                 }
             }
-            string_to_print = "".to_owned();
-            //first line
-            string_to_print = string_to_print
-                + "Current song: "
-                + &(song_names[current_song])
-                + " - "
-                + get_current_song_played_duration(&sink).as_str()
-                + "/"
-                + current_song_len_str.as_str()
-                + "\r\n";
-            //second line
-            if (index_in_rand_queue == random_queue.len() - 1) {
+            if (sink.is_paused() && !updated_since_paused) || !sink.is_paused() {
+                string_to_print = "".to_owned();
+                //first line
                 string_to_print = string_to_print
-                    + "Next song: "
-                    + &song_names[random_queue[0]]
+                    + "Current song: "
+                    + &(song_names[current_song])
                     + " - "
-                    + get_file_duration(&(song_names[random_queue[0]])).as_str()
+                    + get_current_song_played_duration(&sink).as_str()
+                    + "/"
+                    + current_song_len_str.as_str()
                     + "\r\n";
-            } else {
-                string_to_print = string_to_print
-                    + "Next song: "
-                    + &song_names[random_queue[index_in_rand_queue + 1]]
-                    + " - "
-                    + get_file_duration(&(song_names[random_queue[index_in_rand_queue + 1]]))
-                        .as_str()
-                    + "\r\n";
-            }
-            //third line
+                //second line
+                if (index_in_rand_queue == random_queue.len() - 1) {
+                    string_to_print = string_to_print
+                        + "Next song: "
+                        + &song_names[random_queue[0]]
+                        + " - "
+                        + get_file_duration(&(song_names[random_queue[0]])).as_str()
+                        + "\r\n";
+                } else {
+                    string_to_print = string_to_print
+                        + "Next song: "
+                        + &song_names[random_queue[index_in_rand_queue + 1]]
+                        + " - "
+                        + get_file_duration(&(song_names[random_queue[index_in_rand_queue + 1]]))
+                            .as_str()
+                        + "\r\n";
+                }
+                //third line
 
-            if index_in_rand_queue >= 1 {
+                if index_in_rand_queue >= 1 {
+                    string_to_print = string_to_print
+                        + "Prev song: "
+                        + song_names[random_queue[index_in_rand_queue - 1]].as_str()
+                        + " - "
+                        + get_file_duration(&(song_names[random_queue[index_in_rand_queue - 1]]))
+                            .as_str()
+                        + "\r\n";
+                } else {
+                    string_to_print = string_to_print
+                        + "Prev song: "
+                        + song_names[random_queue[random_queue.len() - 1]].as_str()
+                        + " - "
+                        + get_file_duration(&(song_names[random_queue[random_queue.len() - 1]]))
+                            .as_str()
+                        + "\r\n";
+                }
+                //fourth line
+                string_to_print = string_to_print + "Volume: " + sink.volume().to_string().as_str();
+                if sink.is_paused() {
+                    string_to_print = string_to_print + "  (Paused)";
+                }
                 string_to_print = string_to_print
-                    + "Prev song: "
-                    + song_names[random_queue[index_in_rand_queue - 1]].as_str()
-                    + " - "
-                    + get_file_duration(&(song_names[random_queue[index_in_rand_queue - 1]]))
-                        .as_str()
-                    + "\r\n";
-            } else {
-                string_to_print = string_to_print
-                    + "Prev song: "
-                    + song_names[random_queue[random_queue.len() - 1]].as_str()
-                    + " - "
-                    + get_file_duration(&(song_names[random_queue[random_queue.len() - 1]]))
-                        .as_str()
-                    + "\r\n";
+                    + " "
+                    + indicator_chars_set_1[indicator].to_string().as_str()
+                    + " ";
+                string_to_print = string_to_print + "\r\n";
+                for _n in 0..N_OF_LINES {
+                    execute!(std::io::stdout(), MoveUp(1), Clear(ClearType::CurrentLine));
+                }
+                print!("{}", string_to_print);
+                if indicator < 3 {
+                    indicator += 1;
+                } else {
+                    indicator = 0;
+                }
+                updated_since_paused = true;
             }
-            //fourth line
-            string_to_print = string_to_print + "Volume: " + sink.volume().to_string().as_str();
-            if sink.is_paused() {
-                string_to_print = string_to_print + "  (Paused)";
-            }
-            string_to_print = string_to_print + "\r\n";
-            for _n in 0..N_OF_LINES {
-                execute!(std::io::stdout(), MoveUp(1), Clear(ClearType::CurrentLine));
-            }
-            print!("{}", string_to_print);
         }
     }
     execute!(
@@ -191,11 +207,14 @@ fn main() {
     disable_raw_mode();
 }
 
-fn toggle_pause(sink: &Sink) {
+// rteurns if audio is playing after the toggle
+fn toggle_pause(sink: &Sink) -> bool {
     if sink.is_paused() {
         sink.play();
+        return true;
     } else {
         sink.pause();
+        return false;
     }
 }
 fn next_song(sink: &Sink) {
