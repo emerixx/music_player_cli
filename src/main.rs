@@ -53,8 +53,13 @@ fn main() {
         );
         exit();
     }
-    for song_name in song_names.iter() {
-        println!("{}", song_name);
+    {
+        let mut i = 0;
+        for song_name in song_names.iter() {
+            println!("{}, index: {}", song_name, i);
+            i += 1;
+        }
+        println!("song_names.len: {}", song_names.len());
     }
     println!("----------");
     for n in 0..N_OF_LINES {
@@ -413,9 +418,9 @@ fn list_music_files() -> Vec<String> {
     }
     for path in paths {
         for item in path.split("/") {
-            if item.chars().nth(0).unwrap() == '.' || !item.ends_with(".mp3") {
-                continue;
-            }
+            //if item.chars().nth(0).unwrap() == '.' || !item.ends_with(".mp3") {
+            //    continue;
+            //} else {
             file_path_temp.push(item.to_string());
         }
         if file_path_temp.len() == 0 {
@@ -423,6 +428,15 @@ fn list_music_files() -> Vec<String> {
             return files;
         }
         // THIS SHIT TOOK 2 HOURS OF SLEEP DEPRIVED CODING, IF IT WORKS, DONT FUCKING TOUCH IT
+        if file_path_temp[file_path_temp.len() - 1]
+            .chars()
+            .nth(0)
+            .unwrap()
+            == '.'
+            || !file_path_temp[file_path_temp.len() - 1].ends_with(".mp3")
+        {
+            continue;
+        }
         files.push(file_path_temp[file_path_temp.len() - 1].clone());
     }
     files.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
