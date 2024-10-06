@@ -26,7 +26,7 @@ use crossterm::{
     execute,
 };
 
-static DIR: &str = "./music/";
+static DIR: &str = "./";
 static CHANGE_VOL_BY: f32 = 0.1;
 static VOL_MAX: f32 = 2.5;
 static VOL_MIN: f32 = 0.0;

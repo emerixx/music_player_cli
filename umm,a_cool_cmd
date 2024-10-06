@@ -1,0 +1,1 @@
+git add . && git commit -m "1. made it so if the music is stopped, the text doesnt update \n 2. added a little indicator to see how often the text is updating" && cargo build --release && rm ~/coding/builds/music_player_cli/* -rf && mv target/release/* ~/coding/builds/music_player_cli
