@@ -26,7 +26,7 @@ use crossterm::{
     execute,
 };
 
-static DIR: &str = "./";
+static DIR: &str = "./music/";
 static CHANGE_VOL_BY: f32 = 0.1;
 static VOL_MAX: f32 = 2.5;
 static VOL_MIN: f32 = 0.0;
@@ -107,7 +107,7 @@ fn main() {
         } else {
             if sink.empty() {
                 if play_random {
-                    if index_in_rand_queue == random_queue.len() + 1 {
+                    if index_in_rand_queue == random_queue.len() - 1 {
                         index_in_rand_queue = 0;
                     } else {
                         index_in_rand_queue += 1;
@@ -128,12 +128,22 @@ fn main() {
                 + current_song_len_str.as_str()
                 + "\r\n";
             //second line
-            string_to_print = string_to_print
-                + "Next song: "
-                + &song_names[random_queue[index_in_rand_queue + 1]]
-                + " - "
-                + get_file_duration(&(song_names[random_queue[index_in_rand_queue + 1]])).as_str()
-                + "\r\n";
+            if (index_in_rand_queue == random_queue.len() - 1) {
+                string_to_print = string_to_print
+                    + "Next song: "
+                    + &song_names[random_queue[0]]
+                    + " - "
+                    + get_file_duration(&(song_names[random_queue[0]])).as_str()
+                    + "\r\n";
+            } else {
+                string_to_print = string_to_print
+                    + "Next song: "
+                    + &song_names[random_queue[index_in_rand_queue + 1]]
+                    + " - "
+                    + get_file_duration(&(song_names[random_queue[index_in_rand_queue + 1]]))
+                        .as_str()
+                    + "\r\n";
+            }
             //third line
 
             if index_in_rand_queue >= 1 {
