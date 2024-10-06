@@ -67,7 +67,7 @@ fn main() {
         std::io::stdout(),
         EnableBracketedPaste,
         EnableFocusChange,
-        EnableMouseCapture
+        //EnableMouseCapture
     );
     loop {
         // `poll()` waits for an `Event` for a given time period
@@ -202,7 +202,7 @@ fn main() {
         std::io::stdout(),
         DisableBracketedPaste,
         DisableFocusChange,
-        DisableMouseCapture
+        //DisableMouseCapture
     );
     disable_raw_mode();
 }
