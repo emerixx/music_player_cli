@@ -42,6 +42,13 @@ fn main() {
     let mut current_song_len_str: String = "".to_owned();
     let mut string_to_print: String = "".to_owned();
     let song_names: Vec<String> = list_music_files();
+    if song_names.len() <= 1 {
+        println!(
+            "error, only {} .mp3 file(s) found in current directory, need atleast 2",
+            song_names.len()
+        );
+        exit();
+    }
     for song_name in song_names.iter() {
         println!("{}", song_name);
     }
@@ -387,7 +394,14 @@ fn list_music_files() -> Vec<String> {
     }
     for path in paths {
         for item in path.split("/") {
+            if item.chars().nth(0).unwrap() == '.' || !item.ends_with(".mp3") {
+                continue;
+            }
             file_path_temp.push(item.to_string());
+        }
+        if file_path_temp.len() == 0 {
+            //println!("no file found...");
+            return files;
         }
         // THIS SHIT TOOK 2 HOURS OF SLEEP DEPRIVED CODING, IF IT WORKS, DONT FUCKING TOUCH IT
         files.push(file_path_temp[file_path_temp.len() - 1].clone());
